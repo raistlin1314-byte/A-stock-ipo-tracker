@@ -32,6 +32,7 @@ jobs:
         run: node scripts/fetch-ipo-data.js
         env:
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
 
       # 提交更改
       - name: 提交更改
