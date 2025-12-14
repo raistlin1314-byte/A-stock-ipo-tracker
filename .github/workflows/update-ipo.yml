@@ -1,0 +1,50 @@
+name: 更新A股打新数据
+
+on:
+  schedule:
+    # 每周一上午8点和周四上午8点执行
+    - cron: '0 0 * * 1,4'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  update-ipo-data:
+    runs-on: ubuntu-latest
+    steps:
+      # 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 设置Node.js环境
+      - name: 设置Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 安装依赖
+      - name: 安装依赖
+        run: |
+          npm install axios cheerio
+
+      # 运行数据抓取脚本
+      - name: 抓取最新A股打新数据
+        run: node scripts/fetch-ipo-data.js
+        env:
+          TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+
+      # 提交更改
+      - name: 提交更改
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git diff --staged --quiet || (git commit -m "自动更新A股打新数据 $(date)" && git push)
+        continue-on-error: true
+
+      # 部署到GitHub Pages
+      - name: 部署到GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
