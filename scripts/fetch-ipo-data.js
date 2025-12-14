@@ -3,6 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
+// ================= 配置区域 =================
+// ⚠️ 请在这里填入你在 PushPlus 创建的【群组编码】
+const PUSHPLUS_TOPIC = 'ipo_team'; 
+// 例如: const PUSHPLUS_TOPIC = 'ipo_team';
+// ===========================================
+
 // 辅助函数：将日期格式化为 YYYYMMDD (Tushare专用)
 function formatDateForTushare(date) {
     const d = new Date(date);
@@ -18,6 +24,67 @@ function formatTushareDateToDisplay(dateStr) {
     return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
 }
 
+// --- 核心功能：发送微信群组推送 ---
+async function sendWeChatNotification(ipoData) {
+    const token = process.env.PUSHPLUS_TOKEN;
+    if (!token) {
+        console.log("提示: 未配置 PUSHPLUS_TOKEN，跳过微信推送");
+        return;
+    }
+
+    if (ipoData.length === 0) {
+        console.log("提示: 无新股数据，跳过微信推送");
+        return;
+    }
+
+    // 1. 准备消息标题
+    const title = `【打新提醒】发现 ${ipoData.length} 只新股申购`;
+
+    // 2. 准备消息内容 (Markdown格式)
+    let content = `### 📅 未来30天新股申购清单\n\n`;
+    content += `| 申购日 | 名称 | 代码 | 价格 |\n`;
+    content += `| :--- | :--- | :--- | :--- |\n`;
+
+    // 按日期排序，最近的在前面
+    const sortedData = [...ipoData].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    sortedData.forEach(item => {
+        const priceStr = item.price ? `${item.price}元` : '待定';
+        // 对当天申购的新股加粗显示
+        const todayStr = new Date().toISOString().split('T')[0];
+        const nameDisplay = item.date === todayStr ? `🔴 **${item.name}**` : `**${item.name}**`;
+        
+        content += `| ${item.date} | ${nameDisplay} | ${item.code} | ${priceStr} |\n`;
+    });
+
+    content += `\n> 更新时间: ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}\n`;
+    content += `> [点击进入打新日历网页](https://raistlin1314-byte.github.io/A-stock-ipo-tracker/)\n`;
+    content += `> *请以券商实际申购信息为准*`;
+
+    // 3. 发送请求给 PushPlus (一对多模式)
+    try {
+        console.log(`正在发送微信推送 (群组: ${PUSHPLUS_TOPIC})...`);
+        
+        const payload = {
+            token: token,
+            title: title,
+            content: content,
+            template: 'markdown',
+            topic: PUSHPLUS_TOPIC // 这里使用了你设置的群组编码
+        };
+
+        const response = await axios.post('http://www.pushplus.plus/send', payload);
+
+        if (response.data && response.data.code === 200) {
+            console.log("✅ 微信推送成功！");
+        } else {
+            console.error("❌ 微信推送失败:", response.data);
+        }
+    } catch (error) {
+        console.error("❌ 推送请求出错:", error.message);
+    }
+}
+
 // 使用Tushare API获取数据
 async function fetchIpoDataFromTushare() {
     const token = process.env.TUSHARE_TOKEN;
@@ -26,13 +93,12 @@ async function fetchIpoDataFromTushare() {
     }
 
     try {
-        // 请求未来30天的数据
         const startDate = formatDateForTushare(new Date()); 
         const endDate = formatDateForTushare(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); 
         
         console.log(`DEBUG: 正在请求 Tushare API...`);
 
-        // 调用Tushare API (注意使用 http 避免SSL报错)
+        // 使用 http 避免 SSL 错误
         const response = await axios.post('http://api.tushare.pro', {
             api_name: 'new_share',
             token: token,
@@ -45,13 +111,11 @@ async function fetchIpoDataFromTushare() {
 
         if (response.data?.data?.items && Array.isArray(response.data.data.items)) {
             const rawItems = response.data.data.items;
-            const fields = response.data.data.fields; // 获取字段定义 ['ts_code', 'name', ...]
+            const fields = response.data.data.fields;
             
             console.log(`DEBUG: 获取到 ${rawItems.length} 条原始数据`);
 
-            // --- 关键修复：将数组转为对象 ---
             const transformedData = rawItems.map(itemArray => {
-                // 将字段名和值对应起来
                 const itemObj = {};
                 fields.forEach((field, index) => {
                     itemObj[field] = itemArray[index];
@@ -72,8 +136,9 @@ async function fetchIpoDataFromTushare() {
                 };
             });
 
-            // 过滤掉日期为空的
-            const validData = transformedData.filter(item => item.date !== '待定');
+            // 过滤并按日期排序
+            const validData = transformedData
+                .filter(item => item.date !== '待定');
             
             console.log(`DEBUG: 过滤后有效打新数据: ${validData.length} 条`);
             return validData;
@@ -92,8 +157,8 @@ async function updateHtmlFile(ipoData) {
     const indexPath = path.join(__dirname, '../index.html');
     let htmlContent = fs.readFileSync(indexPath, 'utf8');
     
-    // 如果没有数据，保持原样或写入空数组，这里我们写入空数组以清空旧的模拟数据
-    // 同时也把更新时间刷新一下
+    // 如果没有数据，依然更新时间，但不清空mockData以免页面难看，或者写入空数组
+    // 这里写入实际数据
     const newDataSection = `const mockIpoData = ${JSON.stringify(ipoData, null, 4)};`;
     
     const updatedHtml = htmlContent.replace(
@@ -112,7 +177,13 @@ async function updateHtmlFile(ipoData) {
 async function main() {
     try {
         const ipoData = await fetchIpoDataFromTushare();
+        
+        // 1. 更新网页
         await updateHtmlFile(ipoData);
+
+        // 2. 发送微信推送
+        await sendWeChatNotification(ipoData);
+        
     } catch (error) {
         console.error("Critical Error:", error);
         process.exit(1);
