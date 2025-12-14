@@ -145,7 +145,104 @@
 
     <script>
         // 模拟A股新股数据
-        const mockIpoData = [];
+        const mockIpoData = [
+    {
+        "name": "新广益",
+        "code": "301687",
+        "date": "2025-12-22",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 8500,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "誉帆科技",
+        "code": "001396",
+        "date": "2025-12-19",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 8500,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "强一股份",
+        "code": "688809",
+        "date": "2025-12-19",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 7500,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "双欣环保",
+        "code": "001369",
+        "date": "2025-12-19",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 60000,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "江天科技",
+        "code": "920121",
+        "date": "2025-12-16",
+        "market": "A股",
+        "price": 21.21,
+        "maxSubscription": 594600,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": 14.5,
+        "expectedFundraise": "2.803亿",
+        "listingDate": "待定"
+    },
+    {
+        "name": "健信超导",
+        "code": "688805",
+        "date": "2025-12-15",
+        "market": "A股",
+        "price": 18.58,
+        "maxSubscription": 10000,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": 61.97,
+        "expectedFundraise": "7.789亿",
+        "listingDate": "待定"
+    }
+];
 
         // 获取下周的日期范围
         function getNextWeekDates() {
