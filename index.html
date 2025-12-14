@@ -140,52 +140,45 @@
             <strong>⚠️ 风险提示：</strong>打新有风险，投资需谨慎。请注意查看发行市盈率、行业对比等信息，理性参与申购。
         </div>
         
-        <p style="text-align:center; color:#666;">最后更新：2024-12-19 10:30:45 (通过Tushare API自动获取)</p>
+        <p style="text-align:center; color:#666;">最后更新：2025/12/14 19:12:13 (通过Tushare API自动获取)</p>
     </div>
 
     <script>
         // 模拟A股新股数据
         const mockIpoData = [
-            {
-                name: "中芯集成",
-                code: "688469",
-                date: "2025-01-15",
-                market: "科创板",
-                price: 12.34,
-                maxSubscription: 50000,
-                requiredMarketValue: { shanghai: 10, shenzhen: 0 },
-                industry: "半导体",
-                peRatio: 25.6,
-                expectedFundraise: "15亿",
-                listingDate: "2025-01-22"
-            },
-            {
-                name: "华泰证券",
-                code: "002945",
-                date: "2025-01-17",
-                market: "深市主板",
-                price: null,
-                maxSubscription: 30000,
-                requiredMarketValue: { shanghai: 0, shenzhen: 5 },
-                industry: "金融",
-                peRatio: "待定",
-                expectedFundraise: "10亿",
-                listingDate: "待定"
-            },
-            {
-                name: "比亚迪电子",
-                code: "002999",
-                date: "2025-01-20",
-                market: "创业板",
-                price: 28.50,
-                maxSubscription: 25000,
-                requiredMarketValue: { shanghai: 0, shenzhen: 8 },
-                industry: "电子制造",
-                peRatio: 22.1,
-                expectedFundraise: "20亿",
-                listingDate: "2025-01-27"
-            }
-        ];
+    {
+        "name": "测试股票A",
+        "code": "000001",
+        "date": "2025-12-21",
+        "market": "深市主板",
+        "price": 15.5,
+        "maxSubscription": 20000,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 2
+        },
+        "industry": "制造业",
+        "peRatio": 20.5,
+        "expectedFundraise": "10亿",
+        "listingDate": "2025-12-28"
+    },
+    {
+        "name": "测试股票B",
+        "code": "688001",
+        "date": "2025-12-28",
+        "market": "科创板",
+        "price": null,
+        "maxSubscription": 30000,
+        "requiredMarketValue": {
+            "shanghai": 5,
+            "shenzhen": 0
+        },
+        "industry": "科技",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    }
+];
 
         // 获取下周的日期范围
         function getNextWeekDates() {
