@@ -26,13 +26,13 @@ async function fetchIpoDataFromTushare() {
     }
 
     try {
-        const startDate = formatDateForTushare(new Date()); // 今天
-        const endDate = formatDateForTushare(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); // 未来30天
+        // 请求未来30天的数据
+        const startDate = formatDateForTushare(new Date()); 
+        const endDate = formatDateForTushare(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)); 
         
         console.log(`DEBUG: 正在请求 Tushare API...`);
-        console.log(`DEBUG: 日期范围: ${startDate} 到 ${endDate}`);
 
-        // 调用Tushare API
+        // 调用Tushare API (注意使用 http 避免SSL报错)
         const response = await axios.post('http://api.tushare.pro', {
             api_name: 'new_share',
             token: token,
@@ -43,40 +43,42 @@ async function fetchIpoDataFromTushare() {
             fields: 'ts_code,name,ipo_date,issue_date,amount,market,price,pe,limit_amount,funds,ballot' 
         });
 
-        // --- 关键调试步骤：打印 API 返回的原始数据 ---
-        // 这样在 GitHub Actions 的日志里就能看到 Tushare 到底给了什么
-        console.log("DEBUG: Tushare 原始返回结果:", JSON.stringify(response.data)); 
-
         if (response.data?.data?.items && Array.isArray(response.data.data.items)) {
-            const rawData = response.data.data.items;
-            console.log(`DEBUG: 获取到 ${rawData.length} 条原始数据`);
+            const rawItems = response.data.data.items;
+            const fields = response.data.data.fields; // 获取字段定义 ['ts_code', 'name', ...]
+            
+            console.log(`DEBUG: 获取到 ${rawItems.length} 条原始数据`);
 
-            // 转换数据格式
-            const transformedData = rawData.map(item => {
-                // Tushare new_share 接口字段映射
-                // 注意：不同接口字段名可能不同，这里以 new_share 标准字段为准
+            // --- 关键修复：将数组转为对象 ---
+            const transformedData = rawItems.map(itemArray => {
+                // 将字段名和值对应起来
+                const itemObj = {};
+                fields.forEach((field, index) => {
+                    itemObj[field] = itemArray[index];
+                });
+
                 return {
-                    name: item.name || '未知',
-                    code: item.ts_code ? item.ts_code.split('.')[0] : '未知',
-                    date: formatTushareDateToDisplay(item.ipo_date), // 申购日期
-                    market: item.market || 'A股',
-                    price: item.price ? parseFloat(item.price) : null,
-                    maxSubscription: item.limit_amount ? parseInt(item.limit_amount * 10000) : 0, // 假如单位是万股
-                    requiredMarketValue: { shanghai: 0, shenzhen: 0 }, // Tushare不直接返回市值要求，暂置0
-                    industry: '待定', // new_share 基础接口可能不含行业，需额外获取或置空
-                    peRatio: item.pe ? parseFloat(item.pe) : '待定',
-                    expectedFundraise: item.funds ? item.funds + '亿' : '待定',
-                    listingDate: formatTushareDateToDisplay(item.issue_date)
+                    name: itemObj.name || '未知',
+                    code: itemObj.ts_code ? itemObj.ts_code.split('.')[0] : '未知',
+                    date: formatTushareDateToDisplay(itemObj.ipo_date), 
+                    market: itemObj.market || 'A股',
+                    price: itemObj.price ? parseFloat(itemObj.price) : null,
+                    maxSubscription: itemObj.limit_amount ? parseInt(itemObj.limit_amount * 10000) : 0, 
+                    requiredMarketValue: { shanghai: 0, shenzhen: 0 }, 
+                    industry: '待定', 
+                    peRatio: itemObj.pe ? parseFloat(itemObj.pe) : '待定',
+                    expectedFundraise: itemObj.funds ? itemObj.funds + '亿' : '待定',
+                    listingDate: formatTushareDateToDisplay(itemObj.issue_date)
                 };
             });
 
-            // 过滤掉日期为空的（还没定申购日的）
+            // 过滤掉日期为空的
             const validData = transformedData.filter(item => item.date !== '待定');
             
             console.log(`DEBUG: 过滤后有效打新数据: ${validData.length} 条`);
             return validData;
         } else {
-            console.warn("WARNING: API返回数据为空或格式不符");
+            console.warn("WARNING: API返回数据为空");
             return [];
         }
     } catch (error) {
@@ -88,16 +90,12 @@ async function fetchIpoDataFromTushare() {
 // 更新HTML文件中的数据
 async function updateHtmlFile(ipoData) {
     const indexPath = path.join(__dirname, '../index.html');
-    
-    // 如果没有数据，不要清空页面，保留旧数据或者写入空数组
-    // 这里我们选择写入真实数据（即使是空的，表示近期确实无申购）
-    
     let htmlContent = fs.readFileSync(indexPath, 'utf8');
     
-    // 构造新的数据字符串
+    // 如果没有数据，保持原样或写入空数组，这里我们写入空数组以清空旧的模拟数据
+    // 同时也把更新时间刷新一下
     const newDataSection = `const mockIpoData = ${JSON.stringify(ipoData, null, 4)};`;
     
-    // 替换 HTML 中的 mockIpoData
     const updatedHtml = htmlContent.replace(
         /(const mockIpoData = )\[([^\]]*?)\];/s,
         newDataSection
@@ -114,10 +112,7 @@ async function updateHtmlFile(ipoData) {
 async function main() {
     try {
         const ipoData = await fetchIpoDataFromTushare();
-        
-        // 只有当获取到数据，或者确认API调用成功但无数据时才更新
         await updateHtmlFile(ipoData);
-        
     } catch (error) {
         console.error("Critical Error:", error);
         process.exit(1);
@@ -127,4 +122,3 @@ async function main() {
 if (require.main === module) {
     main();
 }
-
