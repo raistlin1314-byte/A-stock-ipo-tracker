@@ -33,7 +33,7 @@ async function fetchIpoDataFromTushare() {
         console.log(`DEBUG: 日期范围: ${startDate} 到 ${endDate}`);
 
         // 调用Tushare API
-        const response = await axios.post('https://api.waditu.com', {
+        const response = await axios.post('http://api.tushare.pro', {
             api_name: 'new_share',
             token: token,
             params: {
@@ -127,3 +127,4 @@ async function main() {
 if (require.main === module) {
     main();
 }
+
