@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股打新提醒 - 每周新股申购信息</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .week-summary {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .month-calendar {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .upcoming-soon {
+            background-color: #fff3cd;
+        }
+        .today {
+            background-color: #d4edda;
+        }
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #28a745;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 A股打新提醒系统</h1>
+        
+        <div class="info-box">
+            <strong>💡 使用说明：</strong>本页面展示下周及未来一个月的A股新股申购信息。数据为模拟数据，实际使用时可接入真实API。
+        </div>
+        
+        <div class="section">
+            <h2>📅 下周新股申购清单</h2>
+            <div id="weekly-summary" class="week-summary">
+                <p><strong>更新时间：</strong><span id="update-time">2024-12-19 10:30:45 (自动更新)</span></p>
+                <table id="weekly-table">
+                    <thead>
+                        <tr>
+                            <th>股票名称</th>
+                            <th>代码</th>
+                            <th>申购日期</th>
+                            <th>市场</th>
+                            <th>发行价</th>
+                            <th>申购上限(万股)</th>
+                            <th>所需市值(万元)</th>
+                            <th>行业</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weekly-body">
+                        <!-- 动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🗓️ 未来一个月新股日历</h2>
+            <div class="month-calendar">
+                <table id="monthly-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>股票名称</th>
+                            <th>代码</th>
+                            <th>市场</th>
+                            <th>发行价</th>
+                            <th>行业</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthly-body">
+                        <!-- 动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ 风险提示：</strong>打新有风险，投资需谨慎。请注意查看发行市盈率、行业对比等信息，理性参与申购。
+        </div>
+        
+        <p style="text-align:center; color:#666;">最后更新：2024-12-19 10:30:45 (通过Tushare API自动获取)</p>
+    </div>
+
+    <script>
+        // 模拟A股新股数据
+        const mockIpoData = [
+            {
+                name: "中芯集成",
+                code: "688469",
+                date: "2025-01-15",
+                market: "科创板",
+                price: 12.34,
+                maxSubscription: 50000,
+                requiredMarketValue: { shanghai: 10, shenzhen: 0 },
+                industry: "半导体",
+                peRatio: 25.6,
+                expectedFundraise: "15亿",
+                listingDate: "2025-01-22"
+            },
+            {
+                name: "华泰证券",
+                code: "002945",
+                date: "2025-01-17",
+                market: "深市主板",
+                price: null,
+                maxSubscription: 30000,
+                requiredMarketValue: { shanghai: 0, shenzhen: 5 },
+                industry: "金融",
+                peRatio: "待定",
+                expectedFundraise: "10亿",
+                listingDate: "待定"
+            },
+            {
+                name: "比亚迪电子",
+                code: "002999",
+                date: "2025-01-20",
+                market: "创业板",
+                price: 28.50,
+                maxSubscription: 25000,
+                requiredMarketValue: { shanghai: 0, shenzhen: 8 },
+                industry: "电子制造",
+                peRatio: 22.1,
+                expectedFundraise: "20亿",
+                listingDate: "2025-01-27"
+            }
+        ];
+
+        // 获取下周的日期范围
+        function getNextWeekDates() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // 周日特殊处理
+            const nextMonday = new Date(today);
+            nextMonday.setDate(today.getDate() + diffToMonday + 7);
+            
+            const nextSunday = new Date(nextMonday);
+            nextSunday.setDate(nextMonday.getDate() + 6);
+            
+            return { start: nextMonday, end: nextSunday };
+        }
+
+        // 获取未来一个月的日期范围
+        function getFutureMonthDates() {
+            const today = new Date();
+            const futureEnd = new Date();
+            futureEnd.setDate(today.getDate() + 30);
+            return { start: today, end: futureEnd };
+        }
+
+        // 过滤指定日期范围内的IPO
+        function filterIposInDateRange(data, startDate, endDate) {
+            return data.filter(item => {
+                const itemDate = new Date(item.date);
+                return itemDate >= startDate && itemDate <= endDate;
+            });
+        }
+
+        // 格式化日期显示
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // 渲染下周新股表格
+        function renderWeeklyTable(data) {
+            const tbody = document.getElementById('weekly-body');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data">下周暂无新股申购</td></tr>';
+                return;
+            }
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.code}</td>
+                    <td>${item.date}</td>
+                    <td>${item.market}</td>
+                    <td>${item.price ? '¥' + item.price.toFixed(2) : '待定'}</td>
+                    <td>${(item.maxSubscription / 10000).toFixed(2)}万</td>
+                    <td>沪${item.requiredMarketValue.shanghai}万/深${item.requiredMarketValue.shenzhen}万</td>
+                    <td>${item.industry}</td>
+                    <td><button onclick="alert('请在交易软件中申购 ${item.name} (${item.code})')">申购</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 渲染月度新股日历
+        function renderMonthlyTable(data) {
+            const tbody = document.getElementById('monthly-body');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-data">未来一个月暂无新股申购</td></tr>';
+                return;
+            }
+            
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const status = item.price ? '已定' : '待定';
+                
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.name}</td>
+                    <td>${item.code}</td>
+                    <td>${item.market}</td>
+                    <td>${item.price ? '¥' + item.price.toFixed(2) : '待定'}</td>
+                    <td>${item.industry}</td>
+                    <td>${status}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 初始化页面
+        function initPage() {
+            const nextWeek = getNextWeekDates();
+            const monthly = getFutureMonthDates();
+            
+            const weeklyData = filterIposInDateRange(mockIpoData, nextWeek.start, nextWeek.end);
+            const monthlyData = filterIposInDateRange(mockIpoData, monthly.start, monthly.end);
+            
+            renderWeeklyTable(weeklyData);
+            renderMonthlyTable(monthlyData);
+            
+            document.getElementById('update-time').textContent = new Date().toLocaleString('zh-CN');
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            initPage();
+            
+            // 每分钟检查一次是否需要更新（实际应用中可改为定时API调用）
+            setInterval(function() {
+                const now = new Date();
+                if (now.getSeconds() === 0) { // 每分钟更新时间显示
+                    document.getElementById('update-time').textContent = now.toLocaleString('zh-CN');
+                }
+            }, 1000);
+        };
+
+        // 添加一个刷新按钮功能
+        function refreshData() {
+            alert('正在刷新最新数据...');
+            initPage(); // 重新初始化
+        }
+    </script>
+</body>
+</html>
