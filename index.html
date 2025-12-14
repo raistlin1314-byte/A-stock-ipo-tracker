@@ -145,40 +145,7 @@
 
     <script>
         // 模拟A股新股数据
-        const mockIpoData = [
-    {
-        "name": "测试股票A",
-        "code": "000001",
-        "date": "2025-12-21",
-        "market": "深市主板",
-        "price": 15.5,
-        "maxSubscription": 20000,
-        "requiredMarketValue": {
-            "shanghai": 0,
-            "shenzhen": 2
-        },
-        "industry": "制造业",
-        "peRatio": 20.5,
-        "expectedFundraise": "10亿",
-        "listingDate": "2025-12-28"
-    },
-    {
-        "name": "测试股票B",
-        "code": "688001",
-        "date": "2025-12-28",
-        "market": "科创板",
-        "price": null,
-        "maxSubscription": 30000,
-        "requiredMarketValue": {
-            "shanghai": 5,
-            "shenzhen": 0
-        },
-        "industry": "科技",
-        "peRatio": "待定",
-        "expectedFundraise": "待定",
-        "listingDate": "待定"
-    }
-];
+        const mockIpoData = [];
 
         // 获取下周的日期范围
         function getNextWeekDates() {
