@@ -145,7 +145,56 @@
 
     <script>
         // 模拟A股新股数据
-        const mockIpoData = [];
+        const mockIpoData = [
+    {
+        "name": "宏明电子",
+        "code": "301682",
+        "date": "2026-03-16",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 8500,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "视涯科技",
+        "code": "688781",
+        "date": "2026-03-16",
+        "market": "A股",
+        "price": null,
+        "maxSubscription": 14000,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": "待定",
+        "expectedFundraise": "待定",
+        "listingDate": "待定"
+    },
+    {
+        "name": "族兴新材",
+        "code": "920078",
+        "date": "2026-03-09",
+        "market": "A股",
+        "price": 6.98,
+        "maxSubscription": 1035000,
+        "requiredMarketValue": {
+            "shanghai": 0,
+            "shenzhen": 0
+        },
+        "industry": "待定",
+        "peRatio": 14.99,
+        "expectedFundraise": "1.605亿",
+        "listingDate": "待定"
+    }
+];
 
         // 获取下周的日期范围
         function getNextWeekDates() {
